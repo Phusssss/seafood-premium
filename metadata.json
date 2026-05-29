@@ -1,0 +1,6 @@
+{
+  "name": "Seafood Premium",
+  "description": "Trang web thương mại điện tử chuyên cung cấp hải sản và thực phẩm tươi sống nhập khẩu cao cấp với trợ lý ấm thực AI tiện dụng.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

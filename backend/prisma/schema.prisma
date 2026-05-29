@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DiscountType {
+  percent
+  flat
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  preparing
+  shipping
+  delivered
+  cancelled
+}
+
+model Category {
+  id      String    @id @default(cuid())
+  name    String
+  nameEn  String?
+  icon    String?
+  Product Product[]
+  Tip     Tip[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id             String   @id
+  name           String
+  nameEn         String?
+  price          Int
+  originalPrice  Int?
+  image          String
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id])
+  origin         String
+  originEn       String?
+  unit           String
+  unitEn         String?
+  description    String
+  descriptionEn  String?
+  isBestSeller   Boolean  @default(false)
+  isInStock      Boolean  @default(true)
+  specs          String?
+  specsEn        String?
+  orderItem      OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([isBestSeller])
+  @@index([isInStock])
+}
+
+model Voucher {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  discountType   DiscountType
+  value          Int
+  minOrderValue  Int          @default(0)
+  description    String
+  descriptionEn  String?
+  isActive       Boolean      @default(true)
+  maxUsage       Int          @default(0)
+  usageCount     Int          @default(0)
+  Order          Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code])
+}
+
+model Tip {
+  id                Int      @id
+  title             String
+  titleEn           String?
+  summary           String
+  summaryEn         String?
+  image             String
+  relatedCategoryId String?
+  relatedCategory   Category? @relation(fields: [relatedCategoryId], references: [id])
+  sections          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([relatedCategoryId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  phone     String   @unique
+  Order     Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([phone])
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id])
+  customerName   String
+  customerPhone  String
+  address        String
+  note           String?
+  shipMethod     String      @default("express")
+  payMethod      String      @default("bank")
+  subtotal       Int
+  shippingFee    Int         @default(0)
+  discount       Int         @default(0)
+  finalTotal     Int
+  status         OrderStatus @default(pending)
+  voucherCode    String?
+  voucherId      String?
+  voucher        Voucher?    @relation(fields: [voucherId], references: [id])
+  items          OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product @relation(fields: [productId], references: [id])
+  productName  String
+  price        Int
+  quantity     Int
+  selectedSpec String?
+
+  @@index([orderId])
+  @@index([productId])
+}
